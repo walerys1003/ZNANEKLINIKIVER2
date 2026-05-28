@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useRef } from 'react';
 import Link from 'next/link';
 import {
   Upload, Camera, Sparkles, CheckCircle2, Shield, Lock, Eye, Smile,
@@ -16,66 +16,86 @@ import { AIMatchBadge } from '@/components/ui/Badges';
 import { SurgeonCard } from '@/components/ui/Cards';
 import { surgeons } from '@/data/mock';
 import { cn } from '@/lib/utils';
+import { FaceMeshAnalyzer } from '@/components/face/FaceMeshAnalyzer';
+import type { FaceAnalysis } from '@/lib/tf/faceMesh';
 
-type Phase = 'intro' | 'upload' | 'analyzing' | 'results';
-
-const analysisSteps = [
-  'Detekcja punktów twarzy (468 landmarks)',
-  'Analiza proporcji złotego podziału',
-  'Ocena symetrii i harmonii rysów',
-  'Mapowanie struktury kostnej',
-  'Dobór rekomendacji estetycznych',
-  'Personalizacja rankingu chirurgów',
-];
+type Phase = 'intro' | 'capture' | 'results';
 
 export default function AiAnalizaPage() {
   const [phase, setPhase] = useState<Phase>('intro');
-  const [progress, setProgress] = useState(0);
-  const [currentStep, setCurrentStep] = useState(0);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  /** Real analysis from TensorFlow.js. Undefined => demo numbers. */
+  const [analysis, setAnalysis] = useState<FaceAnalysis | undefined>();
 
-  // Animate analysis progress
-  useEffect(() => {
-    if (phase !== 'analyzing') return;
-    const interval = setInterval(() => {
-      setProgress((p) => {
-        const next = p + 1;
-        const stepIdx = Math.floor((next / 100) * analysisSteps.length);
-        setCurrentStep(Math.min(stepIdx, analysisSteps.length - 1));
-        if (next >= 100) {
-          clearInterval(interval);
-          setTimeout(() => setPhase('results'), 600);
-          return 100;
-        }
-        return next;
-      });
-    }, 60);
-    return () => clearInterval(interval);
-  }, [phase]);
-
-  const handleUpload = () => {
-    setPhase('analyzing');
-    setProgress(0);
-    setCurrentStep(0);
+  const handleComplete = (result: FaceAnalysis) => {
+    setAnalysis(result);
+    setPhase('results');
+    if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleReset = () => {
+    setAnalysis(undefined);
     setPhase('intro');
-    setProgress(0);
-    setCurrentStep(0);
   };
 
   return (
     <>
       <TopNav />
 
-      {phase === 'intro' && <IntroView onStart={() => setPhase('upload')} />}
-      {phase === 'upload' && <UploadView fileInputRef={fileInputRef} onAnalyze={handleUpload} onBack={() => setPhase('intro')} />}
-      {phase === 'analyzing' && <AnalyzingView progress={progress} currentStep={currentStep} />}
-      {phase === 'results' && <ResultsView onReset={handleReset} />}
+      {phase === 'intro' && <IntroView onStart={() => setPhase('capture')} />}
+      {phase === 'capture' && (
+        <CaptureView
+          onComplete={handleComplete}
+          onBack={() => setPhase('intro')}
+          onDemo={() => setPhase('results')}
+        />
+      )}
+      {phase === 'results' && <ResultsView analysis={analysis} onReset={handleReset} />}
 
       <Footer />
     </>
+  );
+}
+
+/* ─────── Capture (real TF.js) ─────── */
+function CaptureView({
+  onComplete,
+  onBack,
+  onDemo,
+}: {
+  onComplete: (a: FaceAnalysis) => void;
+  onBack: () => void;
+  onDemo: () => void;
+}) {
+  return (
+    <section className="bg-nude-100 py-16 md:py-24 min-h-[80vh]">
+      <Container size="editorial">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-12">
+            <Eyebrow className="text-rosegold-500">Krok 1 z 2 · On-device analysis</Eyebrow>
+            <h1 className="font-display text-4xl md:text-5xl text-charcoal-800 mt-3">
+              Wybierz <span className="font-serif-editorial italic text-rosegold-500">tryb analizy</span>
+            </h1>
+            <p className="font-serif-editorial italic text-charcoal-500 mt-3">
+              TensorFlow.js MediaPipe FaceMesh · 468 landmarków · 100% w Twojej przeglądarce.
+            </p>
+          </div>
+
+          <FaceMeshAnalyzer onComplete={onComplete} onCancel={onBack} />
+
+          <div className="mt-10 text-center space-y-3">
+            <button onClick={onBack} className="text-sm text-charcoal-600 hover:text-burgundy-500 font-medium mr-6">
+              ← Wstecz
+            </button>
+            <button
+              onClick={onDemo}
+              className="text-xs text-charcoal-500 hover:text-rosegold-500 underline underline-offset-4"
+            >
+              Pomiń · Zobacz demo wyników
+            </button>
+          </div>
+        </div>
+      </Container>
+    </section>
   );
 }
 
@@ -174,227 +194,19 @@ function IntroView({ onStart }: { onStart: () => void }) {
   );
 }
 
-/* ─────── Upload ─────── */
-function UploadView({ fileInputRef, onAnalyze, onBack }: any) {
-  const [hasFile, setHasFile] = useState(false);
-
-  return (
-    <section className="bg-nude-100 py-16 md:py-24 min-h-[80vh]">
-      <Container size="editorial">
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-12">
-            <Eyebrow className="text-rosegold-500">Krok 1 z 3 · Wgraj zdjęcie</Eyebrow>
-            <h1 className="font-display text-4xl md:text-5xl text-charcoal-800 mt-3">
-              Wybierz swoje selfie
-            </h1>
-            <p className="font-serif-editorial italic text-charcoal-500 mt-3">
-              Najlepiej en face, w neutralnym świetle dziennym.
-            </p>
-          </div>
-
-          {/* Dropzone */}
-          <div
-            onClick={() => fileInputRef.current?.click()}
-            className={cn(
-              'group relative aspect-[4/3] md:aspect-[16/9] border-2 border-dashed transition-all cursor-pointer overflow-hidden',
-              hasFile
-                ? 'border-champagne-500 bg-champagne-500/5'
-                : 'border-champagne-500/40 hover:border-champagne-500 bg-nude-50 hover:bg-champagne-500/5'
-            )}
-          >
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              className="sr-only"
-              onChange={() => setHasFile(true)}
-            />
-
-            {/* Decorative corners */}
-            <div className="absolute top-3 left-3 w-8 h-8 border-l-2 border-t-2 border-champagne-500/60" />
-            <div className="absolute top-3 right-3 w-8 h-8 border-r-2 border-t-2 border-champagne-500/60" />
-            <div className="absolute bottom-3 left-3 w-8 h-8 border-l-2 border-b-2 border-champagne-500/60" />
-            <div className="absolute bottom-3 right-3 w-8 h-8 border-r-2 border-b-2 border-champagne-500/60" />
-
-            <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-8">
-              {hasFile ? (
-                <>
-                  <CheckCircle2 size={56} strokeWidth={1} className="text-champagne-600 mb-4" />
-                  <div className="font-display text-xl text-charcoal-800">Zdjęcie gotowe do analizy</div>
-                  <div className="font-serif-editorial italic text-sm text-charcoal-500 mt-2">portret-1.jpg · 2.3 MB</div>
-                </>
-              ) : (
-                <>
-                  <Upload size={56} strokeWidth={1} className="text-champagne-600 mb-4 group-hover:-translate-y-1 transition-transform" />
-                  <div className="font-display text-2xl text-charcoal-800">Upuść zdjęcie tutaj</div>
-                  <div className="font-serif-editorial italic text-sm text-charcoal-500 mt-2">lub kliknij, by wybrać z dysku</div>
-                  <div className="mt-6 text-[10px] uppercase tracking-widest text-charcoal-400">
-                    JPG · PNG · do 10 MB
-                  </div>
-                </>
-              )}
-            </div>
-          </div>
-
-          {/* Photo guidelines */}
-          <div className="mt-10 grid md:grid-cols-4 gap-4">
-            <Guideline good label="En face" hint="Patrz prosto" />
-            <Guideline good label="Naturalne światło" hint="Dzienne, miękkie" />
-            <Guideline good label="Bez makijażu" hint="Optymalna analiza" />
-            <Guideline good={false} label="Bez filtrów" hint="Tylko oryginalne" />
-          </div>
-
-          {/* Actions */}
-          <div className="mt-10 flex justify-between items-center">
-            <button onClick={onBack} className="text-sm text-charcoal-600 hover:text-burgundy-500 font-medium">
-              ← Wstecz
-            </button>
-            <ButtonPrimary onClick={onAnalyze} disabled={!hasFile} size="lg">
-              Analizuj z AI
-            </ButtonPrimary>
-          </div>
-
-          {/* Skip / demo */}
-          <div className="mt-6 text-center">
-            <button
-              onClick={() => { setHasFile(true); setTimeout(onAnalyze, 200); }}
-              className="text-xs text-charcoal-500 hover:text-rosegold-500 underline underline-offset-4"
-            >
-              Pomiń · Zobacz demo analizy
-            </button>
-          </div>
-        </div>
-      </Container>
-    </section>
-  );
-}
-
-/* ─────── Analyzing ─────── */
-function AnalyzingView({ progress, currentStep }: { progress: number; currentStep: number }) {
-  return (
-    <section className="bg-nude-100 py-20 md:py-32 min-h-[80vh] flex items-center">
-      <Container size="editorial">
-        <div className="max-w-4xl mx-auto">
-          <div className="grid lg:grid-cols-[1fr_1.2fr] gap-12 items-center">
-            {/* AI Orb */}
-            <div className="flex flex-col items-center justify-center">
-              <div className="relative">
-                <AIOrb size="xl" />
-                {/* Scanning grid overlay */}
-                <FaceLandmarkOverlay />
-              </div>
-              <div className="mt-8 text-center">
-                <Eyebrow className="text-rosegold-500">Analiza w toku</Eyebrow>
-                <div className="font-display text-5xl text-charcoal-800 tabular-nums mt-3">
-                  {progress}<span className="text-2xl text-champagne-500">%</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Steps */}
-            <div>
-              <h2 className="font-display text-3xl md:text-4xl text-charcoal-800 leading-tight">
-                AI analizuje<br />
-                <span className="font-serif-editorial italic text-rosegold-500">Twoją unikalną twarz</span>
-              </h2>
-              <p className="font-serif-editorial italic text-charcoal-500 mt-3 mb-8">
-                Wszystkie obliczenia odbywają się lokalnie. Zaraz zobaczysz personalizowany raport.
-              </p>
-
-              <ul className="space-y-4">
-                {analysisSteps.map((step, i) => {
-                  const isDone = i < currentStep;
-                  const isActive = i === currentStep;
-                  return (
-                    <li
-                      key={step}
-                      className={cn(
-                        'flex items-center gap-3 text-sm transition-opacity duration-300',
-                        i > currentStep && 'opacity-30'
-                      )}
-                    >
-                      <div className={cn(
-                        'w-5 h-5 rounded-full border flex items-center justify-center flex-shrink-0',
-                        isDone ? 'bg-champagne-500 border-champagne-500 text-charcoal-800' :
-                        isActive ? 'border-rosegold-500 animate-pulse' :
-                        'border-charcoal-300'
-                      )}>
-                        {isDone && <CheckCircle2 size={12} strokeWidth={2} />}
-                        {isActive && <span className="w-1.5 h-1.5 rounded-full bg-rosegold-500" />}
-                      </div>
-                      <span className={cn(
-                        isActive ? 'text-charcoal-800 font-medium' : 'text-charcoal-600'
-                      )}>
-                        {step}
-                      </span>
-                    </li>
-                  );
-                })}
-              </ul>
-
-              {/* Progress bar */}
-              <div className="mt-10">
-                <div className="h-1 bg-champagne-500/20 overflow-hidden">
-                  <div
-                    className="h-full bg-gradient-to-r from-rosegold-500 via-champagne-500 to-rosegold-500 gold-shimmer transition-all duration-300"
-                    style={{ width: `${progress}%` }}
-                  />
-                </div>
-                <div className="mt-2 flex items-center justify-between text-[11px] text-charcoal-500">
-                  <span className="font-serif-editorial italic">Pozostało {Math.max(1, 12 - Math.floor(progress / 8.3))} sekund</span>
-                  <span className="tabular-nums">{progress}/100</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </Container>
-    </section>
-  );
-}
-
-function FaceLandmarkOverlay() {
-  // 12 random landmark points scattered around an oval face
-  const points = Array.from({ length: 18 }, (_, i) => {
-    const angle = (i / 18) * Math.PI * 2;
-    const r = 60 + Math.sin(i * 1.7) * 18;
-    return { cx: 100 + Math.cos(angle) * r, cy: 100 + Math.sin(angle) * r * 1.2, delay: i * 0.08 };
-  });
-
-  return (
-    <svg
-      viewBox="0 0 200 200"
-      className="absolute inset-0 w-full h-full pointer-events-none"
-      aria-hidden
-    >
-      {/* Face oval guide */}
-      <ellipse cx="100" cy="100" rx="62" ry="78" fill="none" stroke="#C9A961" strokeWidth="0.5" opacity="0.4" strokeDasharray="2 3" />
-      <line x1="100" y1="22" x2="100" y2="178" stroke="#C9A961" strokeWidth="0.5" opacity="0.3" strokeDasharray="2 3" />
-      <line x1="38" y1="100" x2="162" y2="100" stroke="#C9A961" strokeWidth="0.5" opacity="0.3" strokeDasharray="2 3" />
-
-      {/* Landmark points */}
-      {points.map((p, i) => (
-        <g key={i}>
-          <circle cx={p.cx} cy={p.cy} r="1.4" fill="#B85A4E">
-            <animate attributeName="opacity" values="0;1;0.4" dur="2s" begin={`${p.delay}s`} repeatCount="indefinite" />
-          </circle>
-          <circle cx={p.cx} cy={p.cy} r="3" fill="none" stroke="#B85A4E" strokeWidth="0.4" opacity="0.5">
-            <animate attributeName="r" values="2;5;2" dur="2s" begin={`${p.delay}s`} repeatCount="indefinite" />
-          </circle>
-        </g>
-      ))}
-
-      {/* Connecting lines for golden ratio */}
-      <path d="M 70 70 L 130 70 L 130 130 L 70 130 Z" fill="none" stroke="#C9A961" strokeWidth="0.6" opacity="0.5" />
-      <path d="M 70 92 L 130 92" stroke="#C9A961" strokeWidth="0.4" opacity="0.4" />
-      <path d="M 70 108 L 130 108" stroke="#C9A961" strokeWidth="0.4" opacity="0.4" />
-    </svg>
-  );
-}
 
 /* ─────── Results ─────── */
-function ResultsView({ onReset }: { onReset: () => void }) {
+function ResultsView({ analysis, onReset }: { analysis?: FaceAnalysis; onReset: () => void }) {
   const topMatches = surgeons.slice(0, 3).sort((a, b) => b.aiMatch - a.aiMatch);
+
+  // Real values from TF.js when available, otherwise editorial demo numbers.
+  const scores = analysis?.scores ?? { harmony: 87, symmetry: 92, goldenRatio: 81, proportion: 79 };
+  const obs = analysis?.observations;
+  const reportId = `AI-${Date.now().toString().slice(-6)}`;
+  const isReal = !!analysis;
+
+  const scoreLabel = (n: number) =>
+    n >= 90 ? 'Wyjątkowa' : n >= 80 ? 'Bardzo wysoka' : n >= 70 ? 'Wysoka' : n >= 60 ? 'Harmonijna' : 'Do dopracowania';
 
   return (
     <>
@@ -403,13 +215,17 @@ function ResultsView({ onReset }: { onReset: () => void }) {
         <Container size="editorial">
           <div className="flex items-start justify-between gap-6 flex-wrap">
             <div>
-              <Eyebrow className="text-rosegold-500">Raport AI · ID: AI-{Date.now().toString().slice(-6)}</Eyebrow>
+              <Eyebrow className="text-rosegold-500">
+                {isReal ? `Raport AI · TensorFlow.js · ID: ${reportId}` : `Raport AI · Demo · ID: ${reportId}`}
+              </Eyebrow>
               <h1 className="font-display text-4xl md:text-5xl text-charcoal-800 mt-3">
                 Twoja analiza<br/>
                 <span className="font-serif-editorial italic text-rosegold-500">jest gotowa</span>
               </h1>
               <p className="font-serif-editorial italic text-charcoal-500 mt-3 max-w-xl">
-                Raport został wygenerowany lokalnie. Zdjęcie zostało automatycznie usunięte.
+                {isReal
+                  ? 'Raport został wygenerowany lokalnie przez TensorFlow.js (468 landmarków MediaPipe FaceMesh). Zdjęcie nigdy nie opuściło Twojego urządzenia.'
+                  : 'Demonstracja struktury raportu — uruchom prawdziwą analizę, by zobaczyć swoje wyniki.'}
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
@@ -429,10 +245,10 @@ function ResultsView({ onReset }: { onReset: () => void }) {
       <section className="bg-nude-50 py-16 border-b border-champagne-500/20">
         <Container size="editorial">
           <div className="grid md:grid-cols-4 gap-4">
-            <ScoreCard label="Harmonia rysów" score={87} description="Bardzo wysoka" />
-            <ScoreCard label="Symetria twarzy" score={92} description="Wyjątkowa" accent />
-            <ScoreCard label="Złoty podział" score={81} description="Wysoki" />
-            <ScoreCard label="Proporcje 1/3" score={79} description="Harmonijne" />
+            <ScoreCard label="Harmonia rysów" score={scores.harmony} description={scoreLabel(scores.harmony)} />
+            <ScoreCard label="Symetria twarzy" score={scores.symmetry} description={scoreLabel(scores.symmetry)} accent />
+            <ScoreCard label="Złoty podział" score={scores.goldenRatio} description={scoreLabel(scores.goldenRatio)} />
+            <ScoreCard label="Proporcje 1/3" score={scores.proportion} description={scoreLabel(scores.proportion)} />
           </div>
         </Container>
       </section>
@@ -477,14 +293,14 @@ function ResultsView({ onReset }: { onReset: () => void }) {
               <ObservationCard
                 icon={Eye}
                 area="Oczy i powieki"
-                observation="Lekka asymetria powieki górnej (≈ 1.8 mm). Linia spojrzenia neutralna, otwartość harmonijna."
+                observation={obs?.eyes ?? 'Lekka asymetria powieki górnej (≈ 1.8 mm). Linia spojrzenia neutralna, otwartość harmonijna.'}
                 recommendation="Blepharoplastyka powiek górnych mogłaby otworzyć spojrzenie."
                 procedureSlug="blepharoplastyka-gornych"
               />
               <ObservationCard
                 icon={Triangle}
                 area="Nos i profil"
-                observation="Garbiek grzbietu nosa ~ 2 mm. Pozostałe proporcje w zakresie złotego podziału."
+                observation={obs?.nose ?? 'Garbiek grzbietu nosa ~ 2 mm. Pozostałe proporcje w zakresie złotego podziału.'}
                 recommendation="Rhinoplastyka ultrasonograficzna z subtelną korektą grzbietu."
                 procedureSlug="rhinoplastyka-ultrasonograficzna"
                 primary
@@ -492,7 +308,7 @@ function ResultsView({ onReset }: { onReset: () => void }) {
               <ObservationCard
                 icon={Smile}
                 area="Usta i okolica"
-                observation="Czerwień wargi górnej delikatnie spłaszczona. Proporcja 1:1.6 z dolną."
+                observation={obs?.lips ?? 'Czerwień wargi górnej delikatnie spłaszczona. Proporcja 1:1.6 z dolną.'}
                 recommendation="Naturalna wolumetria kwasem hialuronowym (0.5 ml)."
               />
             </div>

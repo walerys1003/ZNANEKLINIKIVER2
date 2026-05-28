@@ -164,33 +164,41 @@ src/
 
 ---
 
-## 🔌 Integracje (mock / ready)
+## 🔌 Integracje Tier 3 (REAL + graceful fallback)
 
-| Integracja | Status | Lokalizacja |
-|---|---|---|
-| **Stripe** checkout (Card / BLIK / Bank transfer) | UI mock | `/rezerwacja` (krok 4) |
-| **Mapbox** luxury style map | SVG mock — gotowy do podpięcia | `src/components/map/LuxuryMap.tsx` |
-| **Cloudinary** image patterns | Komponent gotowy | `src/components/ui/Visuals.tsx` (zamiana abstract → real images = drop-in) |
-| **WebRTC** wideo konsultacja | UI mock | `/telekonsultacje/[id]` |
-| **TensorFlow.js** face landmarks | UI symulacja (12s timer + 468 punktów SVG) | `/ai-analiza` |
-| **Bank Finance APIs** (mBank / Santander / BNP / PKO) | UI + kalkulator | `/finansowanie` |
+Wszystkie integracje działają w trybie **dual-mode**: gdy klucz/token jest skonfigurowany w `.env.local` — używamy prawdziwego SDK; gdy nie — graceful fallback (mock UI lub in-page demo). Aplikacja działa end-to-end bez żadnej konfiguracji.
 
-`LuxuryMap` zawiera komentarz z instrukcją podpięcia prawdziwego Mapboxa: zamień `<svg>` na `<div ref={mapRef}>` i zainicjalizuj `mapbox-gl` ze stylem dopasowanym do tokenów cream/champagne/charcoal.
+| Integracja | Realna implementacja | Fallback | Env var |
+|---|---|---|---|
+| **TensorFlow.js** Face Mesh | `@tensorflow-models/face-landmarks-detection` — MediaPipe FaceMesh, 468 landmarków, on-device w przeglądarce. Webcam + upload. Real-time canvas overlay z punktami, liniami złotego podziału i obliczonymi metrykami harmonia/symetria/proporcje. | — (model zawsze pobierany z tfhub, ~3 MB) | brak (auto) |
+| **Stripe** Payment Intents | `@stripe/stripe-js` + `@stripe/react-stripe-js` + `stripe` SDK. `<PaymentElement>` (Card + Apple Pay + Google Pay + Link + BLIK gdy w PL). API route `/api/checkout/create-payment-intent` z 3-D Secure. | Editorial mock card form z `pi_demo_*` IDs | `STRIPE_SECRET_KEY` + `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` |
+| **Mapbox GL** | `mapbox-gl` + `react-map-gl/mapbox` — custom HTML markery, popupy, NavigationControl, ScaleControl. Real lng/lat dla 6 klinik i 5 destynacji. | SVG `LuxuryMap` (Poland silhouette, animowane piny) | `NEXT_PUBLIC_MAPBOX_TOKEN` (+ opcj. `NEXT_PUBLIC_MAPBOX_STYLE`) |
+| **WebRTC** P2P video | `RTCPeerConnection` z STUN (Google + Twilio), `getUserMedia`, `getDisplayMedia` (screen share), `replaceTrack`. Hook `useWebRTCRoom` z 3 trybami: `self` / `loopback` (real PC↔PC w jednej karcie — domyślny demo) / `signaling` (Socket.IO). | `loopback` jest pełnoprawnym real WebRTC — bez serwera | `NEXT_PUBLIC_SIGNALING_URL` (dla produkcji) |
+| **Cloudinary** image patterns | Komponent gotowy (`SurgeonPortrait`, `BeautyEditorial`) — wystarczy `<Image src="res.cloudinary.com/...">` | Abstract SVG kompozycje | (drop-in) |
+
+Pełna lista env vars w `.env.example`. Wszystkie są **opcjonalne** — bez żadnej konfiguracji każda integracja działa w trybie demo, więc preview na sandboxie pokazuje pełen UX bez payload kluczy.
+
+### Architektura graceful fallback
+
+```
+TensorFlow.js: hook → real detection LUB demo numbers
+Stripe:        api/checkout → real PI LUB pi_demo_<ts>; client → <PaymentElement> LUB <MockCardForm>
+Mapbox:        <LuxuryMap> → <RealMapboxMap> LUB <SvgLuxuryMap> (auto-switch po token + lng/lat)
+WebRTC:        useWebRTCRoom mode=loopback (default) LUB mode=signaling (gdy env)
+```
 
 ---
 
-## 🚧 Następne kroki (Tier 3)
+## 🚧 Następne kroki (Tier 4)
 
-- [ ] Realny upload zdjęć + TensorFlow.js face mesh (zamiast symulacji)
-- [ ] Realna integracja Stripe (Payment Intents API)
-- [ ] Realny Mapbox z custom style URL
-- [ ] WebRTC peer-to-peer dla telekonsultacji (Daily.co / Twilio)
+- [ ] Produkcyjny serwer signaling (Socket.IO + TURN servers Twilio/Cloudflare)
+- [ ] Stripe webhook handler (`/api/stripe/webhook`) + payment confirmation email
+- [ ] Mapbox custom style URL z paletą cream/champagne (Studio)
+- [ ] Real Cloudinary upload + transformacje (face-aware crop dla portretów chirurgów)
 - [ ] Mobile dedicated screens (drawer nav + touch gestures)
 - [ ] Multi-language (EN / DE / SE dla medical tourism)
 - [ ] CMS dla magazyn editorial (Sanity / Contentful)
 - [ ] CRM kalendarz integration (Google Calendar / Cal.com)
-- [ ] Cloudinary integration dla obrazów (gdy będą real photos)
-- [ ] Stripe integration dla pricing
 - [ ] WordPress/Sanity headless backend
 
 ---

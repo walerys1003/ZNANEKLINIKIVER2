@@ -9,11 +9,11 @@ import { LuxuryMap, type LuxuryMapPin } from '@/components/map/LuxuryMap';
 import { Plane, Hotel, UserCheck, Calendar } from 'lucide-react';
 
 const tourismPins: LuxuryMapPin[] = [
-  { id: 'warszawa', label: 'Warszawa', sublabel: 'Hub Centralny · 124 chirurgów', x: 56, y: 44, variant: 'tourism' },
-  { id: 'krakow', label: 'Kraków', sublabel: 'UNESCO · 98 chirurgów', x: 50, y: 68, variant: 'tourism' },
-  { id: 'gdansk', label: 'Gdańsk', sublabel: 'Nadmorski · 45 chirurgów', x: 44, y: 22, variant: 'tourism' },
-  { id: 'wroclaw', label: 'Wrocław', sublabel: 'Bliżej DE · 76 chirurgów', x: 32, y: 55, variant: 'featured' },
-  { id: 'poznan', label: 'Poznań', sublabel: 'Hub Zachodni · 62 chirurgów', x: 38, y: 38, variant: 'featured' },
+  { id: 'warszawa', label: 'Warszawa', sublabel: 'Hub Centralny · 124 chirurgów', x: 56, y: 44, lng: 21.0122, lat: 52.2297, variant: 'tourism' },
+  { id: 'krakow',   label: 'Kraków',   sublabel: 'UNESCO · 98 chirurgów',         x: 50, y: 68, lng: 19.9450, lat: 50.0647, variant: 'tourism' },
+  { id: 'gdansk',   label: 'Gdańsk',   sublabel: 'Nadmorski · 45 chirurgów',      x: 44, y: 22, lng: 18.6466, lat: 54.3520, variant: 'tourism' },
+  { id: 'wroclaw',  label: 'Wrocław',  sublabel: 'Bliżej DE · 76 chirurgów',      x: 32, y: 55, lng: 17.0385, lat: 51.1079, variant: 'featured' },
+  { id: 'poznan',   label: 'Poznań',   sublabel: 'Hub Zachodni · 62 chirurgów',   x: 38, y: 38, lng: 16.9252, lat: 52.4064, variant: 'featured' },
 ];
 
 const packages = [

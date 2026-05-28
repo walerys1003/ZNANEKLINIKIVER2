@@ -1,33 +1,21 @@
 import { Navigation2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { RealMapboxMap } from './RealMapboxMap';
 
 export type LuxuryMapPin = {
   id: string;
   label: string;
   sublabel?: string;
-  x: number; // 0–100 percentage
-  y: number; // 0–100 percentage
+  /** Optional approx percentage coords for the SVG fallback (0–100). */
+  x?: number;
+  y?: number;
+  /** Real lng/lat used by Mapbox GL when a token is available. */
+  lng?: number;
+  lat?: number;
   variant?: 'default' | 'featured' | 'tourism';
 };
 
-/**
- * LuxuryMap — editorial-luxury map component.
- *
- * NOTE: This renders a Mapbox-styled mock using SVG. To swap in real Mapbox GL,
- * replace the inner <svg> with a <div ref={mapRef}> and initialise mapbox-gl
- * with a custom style URL (e.g. mapbox://styles/{user}/{styleId}) tuned to the
- * cream + champagne + charcoal design tokens. The visual treatment below
- * mirrors what such a style would produce.
- */
-export function LuxuryMap({
-  pins = [],
-  title,
-  subtitle,
-  height = 'md',
-  className,
-  showControls = true,
-  showLegend = true,
-}: {
+export interface LuxuryMapProps {
   pins?: LuxuryMapPin[];
   title?: string;
   subtitle?: string;
@@ -35,7 +23,39 @@ export function LuxuryMap({
   className?: string;
   showControls?: boolean;
   showLegend?: boolean;
-}) {
+  /** Center [lng, lat] used by the Mapbox GL renderer. Defaults to Poland. */
+  center?: [number, number];
+  /** Initial zoom for Mapbox GL. */
+  zoom?: number;
+}
+
+/**
+ * LuxuryMap — editorial-luxury map component.
+ *
+ * Renders **real Mapbox GL** when `NEXT_PUBLIC_MAPBOX_TOKEN` is defined,
+ * falling back to a hand-built SVG mock that mirrors the same look & feel.
+ * That makes the page work end-to-end without any credentials, while
+ * unlocking pan/zoom/satellite when a token is provided.
+ */
+export function LuxuryMap(props: LuxuryMapProps) {
+  // Real Mapbox path: any pin with lng+lat or an explicit token + center.
+  const hasToken = !!process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
+  const hasCoords = props.pins?.some((p) => typeof p.lng === 'number' && typeof p.lat === 'number');
+  if (hasToken && hasCoords) {
+    return <RealMapboxMap {...props} />;
+  }
+  return <SvgLuxuryMap {...props} />;
+}
+
+function SvgLuxuryMap({
+  pins = [],
+  title,
+  subtitle,
+  height = 'md',
+  className,
+  showControls = true,
+  showLegend = true,
+}: LuxuryMapProps) {
   const heights = { sm: 'h-[320px]', md: 'h-[480px]', lg: 'h-[640px]' };
 
   return (
@@ -110,6 +130,8 @@ export function LuxuryMap({
         {pins.map((p) => {
           const isFeatured = p.variant === 'featured';
           const isTourism = p.variant === 'tourism';
+          // Skip pins without SVG-mode coords (real-coord-only setups)
+          if (typeof p.x !== 'number' || typeof p.y !== 'number') return null;
           return (
             <div
               key={p.id}

@@ -8,12 +8,12 @@ import { VerifiedBadge, RatingStars } from '@/components/ui/Badges';
 import { LuxuryMap, type LuxuryMapPin } from '@/components/map/LuxuryMap';
 
 const clinics = [
-  { slug: 'estetica-warszawa', name: 'Klinika Estetica', city: 'Warszawa', district: 'Mokotów', surgeonsCount: 12, rating: 4.9, reviews: 1240, established: 2008, badge: 'premium' as const, x: 56, y: 44 },
-  { slug: 'medi-spa-krakow', name: 'Medi Spa Kraków', city: 'Kraków', district: 'Stare Miasto', surgeonsCount: 8, rating: 4.8, reviews: 893, established: 2011, badge: 'medical-tourism' as const, x: 50, y: 68 },
-  { slug: 'beauty-clinic-wroclaw', name: 'Beauty Clinic Wrocław', city: 'Wrocław', district: 'Krzyki', surgeonsCount: 6, rating: 4.7, reviews: 612, established: 2014, badge: 'board-certified' as const, x: 32, y: 55 },
-  { slug: 'aesthetic-house-poznan', name: 'Aesthetic House', city: 'Poznań', district: 'Centrum', surgeonsCount: 7, rating: 4.8, reviews: 745, established: 2010, badge: 'premium' as const, x: 38, y: 38 },
-  { slug: 'gdansk-derm-medical', name: 'Gdańsk Derm Medical', city: 'Gdańsk', district: 'Oliwa', surgeonsCount: 5, rating: 4.6, reviews: 458, established: 2015, badge: 'board-certified' as const, x: 44, y: 22 },
-  { slug: 'estetique-lodz', name: 'Estetique Łódź', city: 'Łódź', district: 'Polesie', surgeonsCount: 4, rating: 4.7, reviews: 387, established: 2017, badge: 'premium' as const, x: 48, y: 50 },
+  { slug: 'estetica-warszawa',      name: 'Klinika Estetica',     city: 'Warszawa', district: 'Mokotów',     surgeonsCount: 12, rating: 4.9, reviews: 1240, established: 2008, badge: 'premium' as const,         x: 56, y: 44, lng: 21.0122, lat: 52.2297 },
+  { slug: 'medi-spa-krakow',         name: 'Medi Spa Kraków',      city: 'Kraków',   district: 'Stare Miasto',surgeonsCount: 8,  rating: 4.8, reviews: 893,  established: 2011, badge: 'medical-tourism' as const, x: 50, y: 68, lng: 19.9450, lat: 50.0647 },
+  { slug: 'beauty-clinic-wroclaw',   name: 'Beauty Clinic Wrocław',city: 'Wrocław',  district: 'Krzyki',      surgeonsCount: 6,  rating: 4.7, reviews: 612,  established: 2014, badge: 'board-certified' as const, x: 32, y: 55, lng: 17.0385, lat: 51.1079 },
+  { slug: 'aesthetic-house-poznan',  name: 'Aesthetic House',      city: 'Poznań',   district: 'Centrum',     surgeonsCount: 7,  rating: 4.8, reviews: 745,  established: 2010, badge: 'premium' as const,         x: 38, y: 38, lng: 16.9252, lat: 52.4064 },
+  { slug: 'gdansk-derm-medical',     name: 'Gdańsk Derm Medical',  city: 'Gdańsk',   district: 'Oliwa',       surgeonsCount: 5,  rating: 4.6, reviews: 458,  established: 2015, badge: 'board-certified' as const, x: 44, y: 22, lng: 18.6466, lat: 54.3520 },
+  { slug: 'estetique-lodz',          name: 'Estetique Łódź',       city: 'Łódź',     district: 'Polesie',     surgeonsCount: 4,  rating: 4.7, reviews: 387,  established: 2017, badge: 'premium' as const,         x: 48, y: 50, lng: 19.4560, lat: 51.7592 },
 ];
 
 const mapPins: LuxuryMapPin[] = clinics.map((c) => ({
@@ -22,6 +22,8 @@ const mapPins: LuxuryMapPin[] = clinics.map((c) => ({
   sublabel: `${c.city} · ${c.surgeonsCount} chirurgów`,
   x: c.x,
   y: c.y,
+  lng: c.lng,
+  lat: c.lat,
   variant: c.badge === 'premium' ? 'featured' : c.badge === 'medical-tourism' ? 'tourism' : 'default',
 }));
 

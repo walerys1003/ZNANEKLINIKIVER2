@@ -16,6 +16,7 @@ import { SurgeonPortrait } from '@/components/ui/Visuals';
 import { AIMatchBadge, RatingStars } from '@/components/ui/Badges';
 import { surgeons, procedures } from '@/data/mock';
 import { cn, formatPrice } from '@/lib/utils';
+import { StripeCheckoutForm } from '@/components/payment/StripeCheckoutForm';
 
 type Step = 1 | 2 | 3 | 4;
 
@@ -63,9 +64,11 @@ export default function RezerwacjaPage() {
   const tax = Math.round(consultPrice * 0.08);
   const total = consultPrice + tax;
 
-  const handleConfirm = () => {
-    const orderId = `CP-${Date.now().toString().slice(-6)}`;
-    router.push(`/rezerwacja/potwierdzenie?id=${orderId}&chirurg=${surgeon.slug}&zabieg=${procedure.slug}&dzien=${selectedDay}&godz=${selectedTime}`);
+  const handleConfirm = (paymentIntentId?: string) => {
+    const orderId = paymentIntentId ?? `CP-${Date.now().toString().slice(-6)}`;
+    router.push(
+      `/rezerwacja/potwierdzenie?id=${orderId}&chirurg=${surgeon.slug}&zabieg=${procedure.slug}&dzien=${selectedDay}&godz=${selectedTime}`
+    );
   };
 
   return (
@@ -171,6 +174,9 @@ export default function RezerwacjaPage() {
                   total={total}
                   onConfirm={handleConfirm}
                   onBack={() => setStep(3)}
+                  surgeon={surgeon}
+                  procedure={procedure}
+                  form={form}
                 />
               )}
             </div>
@@ -555,8 +561,8 @@ function StepDetails({ form, setForm, onNext, onBack }: any) {
   );
 }
 
-/* ─────── Step 4: Payment (mock Stripe) ─────── */
-function StepPayment({ paymentMethod, setPaymentMethod, total, onConfirm, onBack }: any) {
+/* ─────── Step 4: Payment (real Stripe Elements + fallbacks) ─────── */
+function StepPayment({ paymentMethod, setPaymentMethod, total, onConfirm, onBack, surgeon, procedure, form }: any) {
   return (
     <div className="space-y-8">
       <header>
@@ -577,7 +583,7 @@ function StepPayment({ paymentMethod, setPaymentMethod, total, onConfirm, onBack
           onClick={() => setPaymentMethod('card')}
           icon={CreditCard}
           label="Karta"
-          sublabel="Visa · Mastercard"
+          sublabel="Visa · Mastercard · Apple Pay"
         />
         <PaymentMethodTile
           active={paymentMethod === 'blik'}
@@ -595,45 +601,16 @@ function StepPayment({ paymentMethod, setPaymentMethod, total, onConfirm, onBack
         />
       </div>
 
-      {/* Card form (Stripe Elements style mock) */}
+      {/* Real Stripe Elements when method=card */}
       {paymentMethod === 'card' && (
-        <div className="bg-surface-card border border-champagne-500/30 p-6 md:p-8 space-y-5">
-          <div>
-            <label className="block text-[10px] uppercase tracking-widest text-charcoal-500 font-semibold mb-2">
-              Numer karty
-            </label>
-            <div className="relative">
-              <input placeholder="4242 4242 4242 4242" className="input-editorial pr-20 tabular-nums tracking-wider" />
-              <div className="absolute right-3 top-1/2 -translate-y-1/2 flex gap-1">
-                <span className="px-1.5 py-0.5 bg-charcoal-800 text-nude-50 text-[8px] font-bold rounded-[2px]">VISA</span>
-                <span className="px-1.5 py-0.5 bg-burgundy-500 text-nude-50 text-[8px] font-bold rounded-[2px]">MC</span>
-              </div>
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-5">
-            <div>
-              <label className="block text-[10px] uppercase tracking-widest text-charcoal-500 font-semibold mb-2">
-                Data ważności
-              </label>
-              <input placeholder="MM / YY" className="input-editorial tabular-nums" />
-            </div>
-            <div>
-              <label className="block text-[10px] uppercase tracking-widest text-charcoal-500 font-semibold mb-2">
-                CVC
-              </label>
-              <input placeholder="000" className="input-editorial tabular-nums" />
-            </div>
-          </div>
-          <div>
-            <label className="block text-[10px] uppercase tracking-widest text-charcoal-500 font-semibold mb-2">
-              Imię i nazwisko na karcie
-            </label>
-            <input placeholder="ANNA KOWALSKA" className="input-editorial uppercase tracking-wider" />
-          </div>
-          <div className="flex items-center gap-2 text-[11px] text-charcoal-500 pt-2 border-t border-champagne-500/20">
-            <Lock size={11} strokeWidth={1.5} className="text-champagne-600" />
-            <span>Twoje dane są szyfrowane end-to-end. Stripe nigdy nie udostępnia ich sprzedawcy.</span>
-          </div>
+        <div className="bg-surface-card border border-champagne-500/30 p-6 md:p-8">
+          <StripeCheckoutForm
+            amount={total}
+            surgeonSlug={surgeon.slug}
+            procedureSlug={procedure.slug}
+            patientEmail={form?.email}
+            onSuccess={(paymentIntentId) => onConfirm(paymentIntentId)}
+          />
         </div>
       )}
 
@@ -646,6 +623,15 @@ function StepPayment({ paymentMethod, setPaymentMethod, total, onConfirm, onBack
               Następnie zaakceptuj transakcję w swojej aplikacji bankowej.
             </p>
             <input placeholder="Kod BLIK (6 cyfr)" maxLength={6} className="input-editorial tabular-nums text-center text-2xl tracking-[0.5em] max-w-xs mx-auto" />
+          </div>
+          <div className="flex items-center justify-between gap-4 pt-6 mt-2 border-t border-champagne-500/30">
+            <div>
+              <div className="text-[10px] uppercase tracking-widest text-charcoal-500 font-semibold">Razem</div>
+              <div className="font-display text-3xl text-charcoal-800 tabular-nums">{formatPrice(total)}</div>
+            </div>
+            <ButtonPrimary onClick={() => onConfirm()} size="xl" icon={<Lock size={14} strokeWidth={1.75} />}>
+              Potwierdź rezerwację
+            </ButtonPrimary>
           </div>
         </div>
       )}
@@ -662,19 +648,17 @@ function StepPayment({ paymentMethod, setPaymentMethod, total, onConfirm, onBack
               </button>
             ))}
           </div>
+          <div className="flex items-center justify-between gap-4 pt-6 mt-6 border-t border-champagne-500/30">
+            <div>
+              <div className="text-[10px] uppercase tracking-widest text-charcoal-500 font-semibold">Razem</div>
+              <div className="font-display text-3xl text-charcoal-800 tabular-nums">{formatPrice(total)}</div>
+            </div>
+            <ButtonPrimary onClick={() => onConfirm()} size="xl" icon={<Lock size={14} strokeWidth={1.75} />}>
+              Potwierdź rezerwację
+            </ButtonPrimary>
+          </div>
         </div>
       )}
-
-      {/* Total CTA */}
-      <div className="flex items-center justify-between gap-4 pt-4 border-t border-champagne-500/30">
-        <div>
-          <div className="text-[10px] uppercase tracking-widest text-charcoal-500 font-semibold">Razem do zapłaty</div>
-          <div className="font-display text-3xl text-charcoal-800 tabular-nums">{formatPrice(total)}</div>
-        </div>
-        <ButtonPrimary onClick={onConfirm} size="xl" icon={<Lock size={14} strokeWidth={1.75} />}>
-          Potwierdź rezerwację
-        </ButtonPrimary>
-      </div>
 
       <div className="flex justify-start">
         <button onClick={onBack} className="text-sm font-medium text-charcoal-600 hover:text-burgundy-500 flex items-center gap-1.5">
