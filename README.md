@@ -69,14 +69,16 @@ src/
 
 ---
 
-## ✅ Zaimplementowane widoki (MVP Tier 1)
+## ✅ Zaimplementowane widoki
+
+### Tier 1 — MVP marketplace
 
 | Trasa | Widok | Status |
 |---|---|---|
 | `/` | Homepage (Editorial Hero + Featured + Categories + AI CTA + Before/After + Magazine) | ✅ |
 | `/chirurdzy` | Katalog z sidebar filterami + grid + paginacja | ✅ |
 | `/chirurdzy/[slug]` | Profil chirurga (portret + tabs + booking + reviews + before/after) | ✅ |
-| `/kliniki` | Katalog klinik premium | ✅ |
+| `/kliniki` | Katalog klinik premium + **luxury map** | ✅ |
 | `/zabiegi` | Katalog zabiegów + kategorie | ✅ |
 | `/zabiegi/[procedure]` | Procedure educational hub | ✅ |
 | `/galeria` | Before/After masonry + filter pills | ✅ |
@@ -84,8 +86,20 @@ src/
 | `/magazyn` | Editorial blog hub | ✅ |
 | `/magazyn/[slug]` | Article single page (drop cap, pull quotes) | ✅ |
 | `/cennik` | Pricing tiers + procedure menu + financing | ✅ |
-| `/turystyka-medyczna` | Medical tourism landing + pakiety | ✅ |
+| `/turystyka-medyczna` | Medical tourism landing + pakiety + **destination map** | ✅ |
 | `/panel-kliniki` | B2B Dashboard (KPI + line chart + activity feed) | ✅ |
+
+### Tier 2 — Advanced features
+
+| Trasa | Widok | Status |
+|---|---|---|
+| `/rezerwacja` | **Checkout flow** 4-step (Zabieg → Termin → Dane → Płatność) + Stripe-style UI | ✅ |
+| `/rezerwacja/potwierdzenie` | Order confirmation z appointment card, next-steps, concierge | ✅ |
+| `/ai-analiza` | **AI Face Visualization** — upload → analiza (468 landmarks) → raport + ranking chirurgów | ✅ |
+| `/telekonsultacje` | Landing wideo z preview pokoju + lista chirurgów online + nadchodzące sesje | ✅ |
+| `/telekonsultacje/[id]` | **Pełnoekranowy pokój wideo** — kontrolki, czat E2E, AI notatki live | ✅ |
+| `/finansowanie` | **Kalkulator rat** — slidery + 4 partnerów bankowych + FAQ + AI sugestie | ✅ |
+| `/panel-kliniki/leady` | **CRM Inbox** — 2-pane (lista + detail), filtry, AI score, timeline, reply box | ✅ |
 
 ---
 
@@ -150,15 +164,31 @@ src/
 
 ---
 
-## 🚧 Następne kroki (Tier 2 / 3)
+## 🔌 Integracje (mock / ready)
 
-- [ ] Checkout flow (3 kroki: Date → Data → Pay)
-- [ ] AI Visualization (Aesthetic Insight tool z analizą twarzy)
-- [ ] CRM dla klinik (Leady inbox + Kalendarz)
-- [ ] Telekonsultacje
-- [ ] Financing Calculator
-- [ ] Mobile dedicated screens
-- [ ] Mapbox luxury styling dla `/chirurdzy/mapa`
+| Integracja | Status | Lokalizacja |
+|---|---|---|
+| **Stripe** checkout (Card / BLIK / Bank transfer) | UI mock | `/rezerwacja` (krok 4) |
+| **Mapbox** luxury style map | SVG mock — gotowy do podpięcia | `src/components/map/LuxuryMap.tsx` |
+| **Cloudinary** image patterns | Komponent gotowy | `src/components/ui/Visuals.tsx` (zamiana abstract → real images = drop-in) |
+| **WebRTC** wideo konsultacja | UI mock | `/telekonsultacje/[id]` |
+| **TensorFlow.js** face landmarks | UI symulacja (12s timer + 468 punktów SVG) | `/ai-analiza` |
+| **Bank Finance APIs** (mBank / Santander / BNP / PKO) | UI + kalkulator | `/finansowanie` |
+
+`LuxuryMap` zawiera komentarz z instrukcją podpięcia prawdziwego Mapboxa: zamień `<svg>` na `<div ref={mapRef}>` i zainicjalizuj `mapbox-gl` ze stylem dopasowanym do tokenów cream/champagne/charcoal.
+
+---
+
+## 🚧 Następne kroki (Tier 3)
+
+- [ ] Realny upload zdjęć + TensorFlow.js face mesh (zamiast symulacji)
+- [ ] Realna integracja Stripe (Payment Intents API)
+- [ ] Realny Mapbox z custom style URL
+- [ ] WebRTC peer-to-peer dla telekonsultacji (Daily.co / Twilio)
+- [ ] Mobile dedicated screens (drawer nav + touch gestures)
+- [ ] Multi-language (EN / DE / SE dla medical tourism)
+- [ ] CMS dla magazyn editorial (Sanity / Contentful)
+- [ ] CRM kalendarz integration (Google Calendar / Cal.com)
 - [ ] Cloudinary integration dla obrazów (gdy będą real photos)
 - [ ] Stripe integration dla pricing
 - [ ] WordPress/Sanity headless backend

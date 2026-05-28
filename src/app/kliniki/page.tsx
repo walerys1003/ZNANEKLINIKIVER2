@@ -5,15 +5,25 @@ import { Container } from '@/components/ui/Container';
 import { Eyebrow, Subtitle } from '@/components/ui/Typography';
 import { BeautyEditorial } from '@/components/ui/Visuals';
 import { VerifiedBadge, RatingStars } from '@/components/ui/Badges';
+import { LuxuryMap, type LuxuryMapPin } from '@/components/map/LuxuryMap';
 
 const clinics = [
-  { slug: 'estetica-warszawa', name: 'Klinika Estetica', city: 'Warszawa', district: 'Mokotów', surgeonsCount: 12, rating: 4.9, reviews: 1240, established: 2008, badge: 'premium' as const },
-  { slug: 'medi-spa-krakow', name: 'Medi Spa Kraków', city: 'Kraków', district: 'Stare Miasto', surgeonsCount: 8, rating: 4.8, reviews: 893, established: 2011, badge: 'medical-tourism' as const },
-  { slug: 'beauty-clinic-wroclaw', name: 'Beauty Clinic Wrocław', city: 'Wrocław', district: 'Krzyki', surgeonsCount: 6, rating: 4.7, reviews: 612, established: 2014, badge: 'board-certified' as const },
-  { slug: 'aesthetic-house-poznan', name: 'Aesthetic House', city: 'Poznań', district: 'Centrum', surgeonsCount: 7, rating: 4.8, reviews: 745, established: 2010, badge: 'premium' as const },
-  { slug: 'gdansk-derm-medical', name: 'Gdańsk Derm Medical', city: 'Gdańsk', district: 'Oliwa', surgeonsCount: 5, rating: 4.6, reviews: 458, established: 2015, badge: 'board-certified' as const },
-  { slug: 'estetique-lodz', name: 'Estetique Łódź', city: 'Łódź', district: 'Polesie', surgeonsCount: 4, rating: 4.7, reviews: 387, established: 2017, badge: 'premium' as const },
+  { slug: 'estetica-warszawa', name: 'Klinika Estetica', city: 'Warszawa', district: 'Mokotów', surgeonsCount: 12, rating: 4.9, reviews: 1240, established: 2008, badge: 'premium' as const, x: 56, y: 44 },
+  { slug: 'medi-spa-krakow', name: 'Medi Spa Kraków', city: 'Kraków', district: 'Stare Miasto', surgeonsCount: 8, rating: 4.8, reviews: 893, established: 2011, badge: 'medical-tourism' as const, x: 50, y: 68 },
+  { slug: 'beauty-clinic-wroclaw', name: 'Beauty Clinic Wrocław', city: 'Wrocław', district: 'Krzyki', surgeonsCount: 6, rating: 4.7, reviews: 612, established: 2014, badge: 'board-certified' as const, x: 32, y: 55 },
+  { slug: 'aesthetic-house-poznan', name: 'Aesthetic House', city: 'Poznań', district: 'Centrum', surgeonsCount: 7, rating: 4.8, reviews: 745, established: 2010, badge: 'premium' as const, x: 38, y: 38 },
+  { slug: 'gdansk-derm-medical', name: 'Gdańsk Derm Medical', city: 'Gdańsk', district: 'Oliwa', surgeonsCount: 5, rating: 4.6, reviews: 458, established: 2015, badge: 'board-certified' as const, x: 44, y: 22 },
+  { slug: 'estetique-lodz', name: 'Estetique Łódź', city: 'Łódź', district: 'Polesie', surgeonsCount: 4, rating: 4.7, reviews: 387, established: 2017, badge: 'premium' as const, x: 48, y: 50 },
 ];
+
+const mapPins: LuxuryMapPin[] = clinics.map((c) => ({
+  id: c.slug,
+  label: c.name,
+  sublabel: `${c.city} · ${c.surgeonsCount} chirurgów`,
+  x: c.x,
+  y: c.y,
+  variant: c.badge === 'premium' ? 'featured' : c.badge === 'medical-tourism' ? 'tourism' : 'default',
+}));
 
 export default function KlinikiPage() {
   return (
@@ -28,6 +38,16 @@ export default function KlinikiPage() {
             </h1>
             <Subtitle className="mt-3 text-xl">200+ klinik medycyny estetycznej zweryfikowanych przez redakcję</Subtitle>
           </header>
+
+          {/* Luxury map */}
+          <div className="mb-12">
+            <LuxuryMap
+              pins={mapPins}
+              title="Mapa klinik premium"
+              subtitle="6 wybranych miast · kliknij pin, by zobaczyć szczegóły"
+              height="lg"
+            />
+          </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
             {clinics.map((c) => (

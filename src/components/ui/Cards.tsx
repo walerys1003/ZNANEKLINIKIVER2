@@ -54,7 +54,7 @@ export function SurgeonCard({ surgeon, variant = 'default', className }: { surge
               <div className="font-display text-lg text-charcoal-800 tabular-nums">{formatPrice(surgeon.consultationPrice)}</div>
             </div>
             <span className="inline-flex items-center gap-1 px-4 py-2 border border-burgundy-500 text-burgundy-500 text-[11px] uppercase tracking-wider font-medium rounded-sm group-hover:bg-burgundy-500 group-hover:text-nude-50 transition-colors">
-              Umów →
+              Zobacz profil →
             </span>
           </div>
         </div>

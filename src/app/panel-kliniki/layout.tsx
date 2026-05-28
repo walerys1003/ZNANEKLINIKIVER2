@@ -1,4 +1,7 @@
+'use client';
+
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard, UserPlus, UserCheck, Image as ImageIcon, MessageSquare,
   Calendar, Megaphone, BarChart3, CreditCard, Settings, Building2
@@ -18,6 +21,7 @@ const navItems = [
 ];
 
 export default function PanelLayout({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
   return (
     <div className="min-h-screen bg-nude-100 flex">
       {/* Sidebar */}
@@ -30,9 +34,11 @@ export default function PanelLayout({ children }: { children: React.ReactNode })
 
         <nav className="flex-1 px-4 py-2">
           <ul className="space-y-0.5">
-            {navItems.map((item, i) => {
+            {navItems.map((item) => {
               const Icon = item.icon;
-              const active = i === 0;
+              const active = item.href === '/panel-kliniki'
+                ? pathname === item.href
+                : pathname.startsWith(item.href);
               return (
                 <li key={item.href}>
                   <Link

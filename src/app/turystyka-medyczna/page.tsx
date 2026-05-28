@@ -5,7 +5,16 @@ import { Container } from '@/components/ui/Container';
 import { Eyebrow, Subtitle, PullQuote } from '@/components/ui/Typography';
 import { ButtonPrimary, ButtonGhost } from '@/components/ui/Buttons';
 import { BeautyEditorial } from '@/components/ui/Visuals';
+import { LuxuryMap, type LuxuryMapPin } from '@/components/map/LuxuryMap';
 import { Plane, Hotel, UserCheck, Calendar } from 'lucide-react';
+
+const tourismPins: LuxuryMapPin[] = [
+  { id: 'warszawa', label: 'Warszawa', sublabel: 'Hub Centralny · 124 chirurgów', x: 56, y: 44, variant: 'tourism' },
+  { id: 'krakow', label: 'Kraków', sublabel: 'UNESCO · 98 chirurgów', x: 50, y: 68, variant: 'tourism' },
+  { id: 'gdansk', label: 'Gdańsk', sublabel: 'Nadmorski · 45 chirurgów', x: 44, y: 22, variant: 'tourism' },
+  { id: 'wroclaw', label: 'Wrocław', sublabel: 'Bliżej DE · 76 chirurgów', x: 32, y: 55, variant: 'featured' },
+  { id: 'poznan', label: 'Poznań', sublabel: 'Hub Zachodni · 62 chirurgów', x: 38, y: 38, variant: 'featured' },
+];
 
 const packages = [
   { slug: 'rhinoplastyka-warszawa-7-days', name: 'Rhinoplastyka Premium · Warszawa', duration: '7 dni', priceMin: 28000, surgeon: 'Dr Michał Kowalski', highlights: ['Konsultacja AI Aesthetic Insight', 'Pakiet hotelowy 5★', 'Concierge 24/7', 'Transport VIP'] },
@@ -66,6 +75,36 @@ export default function TurystykaPage() {
                   <div className="text-xs uppercase tracking-widest text-charcoal-500 mt-1">{s.label}</div>
                 </div>
               ))}
+            </div>
+          </Container>
+        </section>
+
+        {/* Destinations Map */}
+        <section className="py-16 md:py-20 bg-nude-100 border-t border-champagne-500/20">
+          <Container size="editorial-wide">
+            <div className="grid lg:grid-cols-[1fr_2fr] gap-10 items-center">
+              <div>
+                <Eyebrow>Mapa destynacji</Eyebrow>
+                <h2 className="font-display text-3xl md:text-5xl text-charcoal-800 mt-3 leading-tight">
+                  Pięć kierunków,<br/>
+                  <span className="font-serif-editorial italic text-burgundy-500">jeden standard luksusu</span>
+                </h2>
+                <p className="font-serif-editorial italic text-charcoal-500 mt-4 leading-relaxed">
+                  Każde z miast oferuje certyfikowane kliniki, hotele 5★ i pełną logistykę z lotniska.
+                  Loty z Berlina, Londynu i Sztokholmu w 1.5–2 godz.
+                </p>
+                <ul className="mt-6 space-y-2 text-sm text-charcoal-700">
+                  <li className="flex items-center gap-2"><span className="text-champagne-600">◆</span> Bezpośrednie loty z 24 miast EU</li>
+                  <li className="flex items-center gap-2"><span className="text-champagne-600">◆</span> Transfer VIP z lotniska w cenie</li>
+                  <li className="flex items-center gap-2"><span className="text-champagne-600">◆</span> Tłumacze PL ↔ EN/DE/SE</li>
+                </ul>
+              </div>
+              <LuxuryMap
+                pins={tourismPins}
+                title="Premium destynacje 2026"
+                subtitle="Kliknij pin, by zobaczyć szczegóły miasta"
+                height="lg"
+              />
             </div>
           </Container>
         </section>

@@ -1,6 +1,6 @@
 import { Container } from '@/components/ui/Container';
 import { AIOrb } from '@/components/ui/AIOrb';
-import { ButtonPrimary } from '@/components/ui/Buttons';
+import { ButtonPrimary, ButtonGold } from '@/components/ui/Buttons';
 import { Eyebrow, Subtitle } from '@/components/ui/Typography';
 
 export function AIMatcherCTA() {
@@ -20,14 +20,17 @@ export function AIMatcherCTA() {
             <p className="mt-6 text-charcoal-600 leading-relaxed max-w-md">
               W 7 krokach AI rekomenduje zabieg dopasowany do Twojej anatomii, stylu życia i oczekiwań. Wyniki potwierdzane przez konsylium chirurgów.
             </p>
-            <div className="mt-8 flex items-center gap-6">
+            <div className="mt-8 flex flex-wrap items-center gap-3">
               <ButtonPrimary href="/ai-doradca" size="lg">
                 Sprawdź dopasowanie AI
               </ButtonPrimary>
-              <span className="text-xs text-charcoal-500 font-serif-editorial italic max-w-[180px]">
-                GDPR compliant · Konsultacja medyczna wymagana
-              </span>
+              <ButtonGold href="/ai-analiza" size="lg">
+                AI Analiza twarzy
+              </ButtonGold>
             </div>
+            <p className="mt-4 text-xs text-charcoal-500 font-serif-editorial italic">
+              GDPR compliant · Privacy by design · Zero retention
+            </p>
           </div>
 
           {/* AI Orb */}

@@ -225,9 +225,12 @@ function BookingCard({ surgeon }: { surgeon: typeof surgeons[number] }) {
       <div className="text-[11px] text-champagne-700 italic font-serif-editorial mb-3">
         AI Match — {surgeon.aiMatch}% dopasowanie do Twojego profilu
       </div>
-      <ButtonPrimary size="sm" className="w-full" icon={<Calendar size={14} />}>
+      <ButtonPrimary size="sm" className="w-full" href={`/rezerwacja?chirurg=${surgeon.slug}`} icon={<Calendar size={14} />}>
         Zarezerwuj termin
       </ButtonPrimary>
+      <Link href="/finansowanie" className="block text-center text-[11px] uppercase tracking-widest text-champagne-700 hover:text-champagne-600 mt-3 font-semibold">
+        Raty 0% → kalkulator
+      </Link>
     </div>
   );
 }

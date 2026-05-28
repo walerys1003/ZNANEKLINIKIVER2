@@ -108,6 +108,61 @@ export const reviews = [
   { initials: 'PJ', name: 'Anna K.', age: 41, procedure: 'Rhinoplastyka', timeAgo: '8 miesięcy temu', rating: 5, verified: true, hasPhoto: false, body: 'Profesjonalizm na najwyższym poziomie. Efekt przerósł moje oczekiwania. Opieka pooperacyjna była znakomita, a zespół zawsze dostępny. Czuję się jak nowa osoba, a powrót do zdrowia był szybszy niż się spodziewałam.' },
 ];
 
+export type Lead = {
+  id: string;
+  initials: string;
+  name: string;
+  age: number;
+  city: string;
+  procedure: string;
+  procedureSlug?: string;
+  surgeon?: string;
+  channel: 'AI Doradca' | 'Profil chirurga' | 'Magazyn' | 'Telekonsultacja' | 'Bezpośredni' | 'Medical Tourism';
+  budget: string;
+  status: 'new' | 'contacted' | 'qualified' | 'booked' | 'lost';
+  priority: 'high' | 'medium' | 'low';
+  aiScore: number;
+  timeAgo: string;
+  message: string;
+  preferredDate?: string;
+  unread?: boolean;
+};
+
+export const leads: Lead[] = [
+  { id: 'L-2847', initials: 'KW', name: 'Karolina W.', age: 32, city: 'Warszawa', procedure: 'Rhinoplastyka ultrasonograficzna', procedureSlug: 'rhinoplastyka-ultrasonograficzna', surgeon: 'Dr Anna Kowalska', channel: 'AI Doradca', budget: '20-35 tys. zł', status: 'new', priority: 'high', aiScore: 94, timeAgo: '12 min temu', message: 'Dzień dobry, jestem zainteresowana konsultacją w kierunku rhinoplastyki ultrasonograficznej. Czytałam o tej technologii w magazynie i chciałabym dowiedzieć się więcej o procedurze, czasie rekonwalescencji i kosztach. Najlepiej termin pod koniec stycznia.', preferredDate: '24-30 stycznia 2026', unread: true },
+  { id: 'L-2846', initials: 'AM', name: 'Aleksandra M.', age: 28, city: 'Kraków', procedure: 'Powiększanie piersi implantami', procedureSlug: 'powiekszanie-piersi', surgeon: 'Dr Tomasz Wiśniewski', channel: 'Profil chirurga', budget: '20-35 tys. zł', status: 'new', priority: 'high', aiScore: 92, timeAgo: '38 min temu', message: 'Proszę o kontakt w sprawie konsultacji powiększania piersi. Mam już badania.', preferredDate: 'Najbliższy możliwy', unread: true },
+  { id: 'L-2845', initials: 'PJ', name: 'Patrycja J.', age: 35, city: 'Berlin / Warszawa', procedure: 'Lifting twarzy SMAS', procedureSlug: 'facelift-smas', surgeon: 'Dr Jan Kowalczyk', channel: 'Medical Tourism', budget: '35+ tys. zł', status: 'new', priority: 'high', aiScore: 96, timeAgo: '1 godz. temu', message: 'I am interested in the SMAS facelift package with accommodation. Planning a visit from Berlin in February.', preferredDate: '10-20 lutego 2026', unread: true },
+  { id: 'L-2844', initials: 'MK', name: 'Magdalena K.', age: 44, city: 'Wrocław', procedure: 'Blepharoplastyka powiek górnych', procedureSlug: 'blepharoplastyka-gornych', channel: 'AI Doradca', budget: '5-10 tys. zł', status: 'contacted', priority: 'medium', aiScore: 88, timeAgo: '2 godz. temu', message: 'Chciałabym umówić konsultację w sprawie korekty opadających powiek. Mam czas tylko w piątki popołudniami.', preferredDate: 'Piątki popołudniami' },
+  { id: 'L-2843', initials: 'EW', name: 'Ewa W.', age: 51, city: 'Gdańsk', procedure: 'Lifting twarzy', surgeon: 'Dr Maria Nowak', channel: 'Magazyn', budget: '20-35 tys. zł', status: 'qualified', priority: 'high', aiScore: 91, timeAgo: '4 godz. temu', message: 'Po przeczytaniu artykułu o liftingu SMAS chciałabym konsultację u dr Nowak.', preferredDate: 'Marzec 2026' },
+  { id: 'L-2842', initials: 'JS', name: 'Joanna S.', age: 38, city: 'Warszawa', procedure: 'Liposukcja VASER', procedureSlug: 'liposukcja-vaser', surgeon: 'Dr Piotr Kamiński', channel: 'AI Doradca', budget: '10-20 tys. zł', status: 'booked', priority: 'medium', aiScore: 89, timeAgo: '6 godz. temu', message: 'Konsultacja umówiona — dziękuję za szybką odpowiedź zespołu.', preferredDate: '8 lutego, 14:00' },
+  { id: 'L-2841', initials: 'NK', name: 'Natalia K.', age: 26, city: 'Poznań', procedure: 'Kwas hialuronowy w usta', channel: 'Telekonsultacja', budget: '5-10 tys. zł', status: 'contacted', priority: 'low', aiScore: 76, timeAgo: '8 godz. temu', message: 'Pytanie o dostępność wideo-konsultacji.' },
+  { id: 'L-2840', initials: 'BL', name: 'Beata L.', age: 47, city: 'Łódź', procedure: 'Abdominoplastyka', procedureSlug: 'abdominoplastyka', surgeon: 'Dr Agnieszka Zając', channel: 'Bezpośredni', budget: '20-35 tys. zł', status: 'qualified', priority: 'medium', aiScore: 87, timeAgo: '1 dzień temu', message: 'Po dwóch ciążach. Czekam na propozycję terminu.' },
+  { id: 'L-2839', initials: 'DK', name: 'Dorota K.', age: 53, city: 'Katowice', procedure: 'Botoks', channel: 'AI Doradca', budget: '5-10 tys. zł', status: 'lost', priority: 'low', aiScore: 68, timeAgo: '2 dni temu', message: 'Dziękuję, znalazłam już klinikę.' },
+];
+
+export type Teleconsultation = {
+  id: string;
+  surgeonSlug: string;
+  surgeonName: string;
+  surgeonInitials: string;
+  patientName: string;
+  patientInitials: string;
+  date: string;
+  time: string;
+  duration: number;
+  status: 'scheduled' | 'live' | 'completed';
+  topic: string;
+  city: string;
+};
+
+export const teleconsultations: Teleconsultation[] = [
+  { id: 'T-1024', surgeonSlug: 'dr-anna-kowalska', surgeonName: 'Dr Anna Kowalska', surgeonInitials: 'AK', patientName: 'Karolina W.', patientInitials: 'KW', date: '24 listopada 2026', time: '14:00', duration: 30, status: 'scheduled', topic: 'Rhinoplastyka — konsultacja wstępna', city: 'Warszawa' },
+  { id: 'T-1023', surgeonSlug: 'dr-tomasz-wisniewski', surgeonName: 'Dr Tomasz Wiśniewski', surgeonInitials: 'TW', patientName: 'Aleksandra M.', patientInitials: 'AM', date: '24 listopada 2026', time: '16:30', duration: 30, status: 'scheduled', topic: 'Powiększanie piersi — wybór implantów', city: 'Kraków' },
+  { id: 'T-1022', surgeonSlug: 'dr-jan-kowalczyk', surgeonName: 'Dr Jan Kowalczyk', surgeonInitials: 'JK', patientName: 'Patrycja J.', patientInitials: 'PJ', date: '25 listopada 2026', time: '10:00', duration: 45, status: 'scheduled', topic: 'Facelift SMAS — medical tourism (z Berlina)', city: 'Warszawa' },
+  { id: 'T-1021', surgeonSlug: 'dr-maria-nowak', surgeonName: 'Dr Maria Nowak', surgeonInitials: 'MN', patientName: 'Magdalena K.', patientInitials: 'MK', date: '25 listopada 2026', time: '12:15', duration: 30, status: 'scheduled', topic: 'Blepharoplastyka powiek górnych', city: 'Wrocław' },
+  { id: 'T-1020', surgeonSlug: 'dr-ewa-wisniewska', surgeonName: 'Dr Ewa Wiśniewska', surgeonInitials: 'EW', patientName: 'Natalia K.', patientInitials: 'NK', date: '26 listopada 2026', time: '09:30', duration: 20, status: 'scheduled', topic: 'Konsultacja kwas hialuronowy', city: 'Łódź' },
+];
+
 export const aiMatcherSteps = [
   { id: 1, question: 'Jakie są Twoje główne oczekiwania?', options: ['Subtelna zmiana', 'Wyrazista metamorfoza', 'Korekta funkcji', 'Odmłodzenie'] },
   { id: 2, question: 'Jak wygląda Twój styl życia?', options: ['Praca w domu', 'Praca biurowa', 'Praca publiczna', 'Sport / aktywny'] },
